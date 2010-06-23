@@ -52,3 +52,12 @@ our sub str2num-parse($s) is export {
     
     $negate, $int-part, $frac-part, $exp-part;
 }
+
+our sub str2num($s) is export {
+    my ($negate, $int-part, $frac-part, $exp-part) = str2num-parse($s);
+    
+    my $result = $int-part.Int;
+    $result = -$result if $negate;
+    $result;
+}
+
