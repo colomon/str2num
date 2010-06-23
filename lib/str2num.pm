@@ -53,7 +53,8 @@ our sub str2num-parse($s) is export {
     $negate, $int-part, $frac-part, $exp-part;
 }
 
-our sub str2num-rat($int-part, $frac-part) {
+our sub str2num-rat($int-part, $frac-part is copy) {
+    $frac-part.=subst(/(\d)0+$/, { ~$_[0] });
     $int-part.Int + $frac-part.Int / (10 ** $frac-part.chars);
 }
 
