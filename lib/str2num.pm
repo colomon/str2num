@@ -53,14 +53,24 @@ our sub str2num-parse($s) is export {
     $negate, $int-part, $frac-part, $exp-part;
 }
 
+our sub str2num-rat($int-part, $frac-part) {
+    $int-part.Int + $frac-part.Int / (10 ** $frac-part.chars);
+}
+
 our sub str2num($s) is export {
     my ($negate, $int-part, $frac-part, $exp-part) = str2num-parse($s);
+    # say :$int-part.perl;
+    # say :$frac-part.perl;
+    # say :$exp-part.perl;
     
     my $result;
-    if $exp-part {
+    if $exp-part.chars > 0 {
         # Num
-    } elsif $frac-part {
+        $result = str2num-rat($int-part, $frac-part ?? $frac-part !! "0") * exp($exp-part, :base(10));
+    } elsif $frac-part.chars > 0 {
         # Rat
+        $result = str2num-rat($int-part, $frac-part);
+        # say $result.WHAT;
     } else {
         # Int
         $result = $int-part.Int;
