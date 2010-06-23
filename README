@@ -1,0 +1,7 @@
+This is yet another attempt to do something about the terrible number parsing
+issues in Rakudo master. I'm working on basically two functions here:
+
+str2num-parse takes a numeric string and returns it split into its component
+parts.
+
+str2num-parts takes those parts and makes a number from them.
