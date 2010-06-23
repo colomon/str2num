@@ -57,8 +57,7 @@ our sub str2num-rat($int-part, $frac-part) {
     $int-part.Int + $frac-part.Int / (10 ** $frac-part.chars);
 }
 
-our sub str2num($s) is export {
-    my ($negate, $int-part, $frac-part, $exp-part) = str2num-parse($s);
+our sub str2num-parts($negate, $int-part, $frac-part, $exp-part) is export {
     # say :$int-part.perl;
     # say :$frac-part.perl;
     # say :$exp-part.perl;
@@ -77,5 +76,10 @@ our sub str2num($s) is export {
     }
     $result = -$result if $negate;
     $result;
+}
+
+our sub str2num($s) is export {
+    my ($negate, $int-part, $frac-part, $exp-part) = str2num-parse($s);
+    str2num-parts($negate, $int-part, $frac-part, $exp-part);
 }
 
