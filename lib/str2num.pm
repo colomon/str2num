@@ -9,10 +9,12 @@ our sub str2num-parse($s) is export {
     }
     
     my $int-part = "";
-    while $char {
+    while $char.defined {
         if $char ~~ '0'..'9' {
+            say "A: $char";
             $int-part ~= $char;
         } else {
+            say "B: $char";
             last;
         }
         $char = $digit-list.shift;
@@ -20,12 +22,15 @@ our sub str2num-parse($s) is export {
     
     my $frac-part = "";
     if ($char eq '.') {
-        while $char = $digit-list.shift {
+        while ($char = $digit-list.shift).defined {
             if $char ~~ '0'..'9' {
                 $frac-part ~= $char;
             } else {
                 last;
             }
+        }
+        if $frac-part eq "" {
+            $frac-part = "0";
         }
     }
     
@@ -37,7 +42,7 @@ our sub str2num-parse($s) is export {
             when '-' { $exp-part = '-'; $char = $digit-list.shift; }
         }
 
-        while $char = $digit-list.shift {
+        while ($char = $digit-list.shift).defined {
             if $char ~~ '0'..'9' {
                 $exp-part ~= $char;
             } else {
