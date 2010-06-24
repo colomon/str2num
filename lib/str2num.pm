@@ -55,7 +55,7 @@ our sub str2num-parse($s) is export {
 
 our sub str2num-rat($int-part, $frac-part is copy) {
     $frac-part.=subst(/(\d)0+$/, { ~$_[0] });
-    $int-part.Int + $frac-part.subst(/^0*/, "").Int / (10 ** $frac-part.chars);
+    $int-part.Int + [+] $frac-part.comb.kv.map(-> $i, $d { $d.Int / (10 ** ($i + 1)) }); 
 }
 
 our sub str2num-parts($negate, $int-part, $frac-part, $exp-part) is export {
