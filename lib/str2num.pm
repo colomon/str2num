@@ -53,9 +53,13 @@ our sub str2num-parse($s) is export {
     $negate, $int-part, $frac-part, $exp-part;
 }
 
+our sub str2num-int($int-part) {
+    [+] $int-part.comb.reverse.kv.map(-> $i, $d { $d.Int * (10 ** $i) });
+}
+
 our sub str2num-rat($int-part, $frac-part is copy) {
     $frac-part.=subst(/(\d)0+$/, { ~$_[0] });
-    $int-part.Int + [+] $frac-part.comb.kv.map(-> $i, $d { $d.Int / (10 ** ($i + 1)) }); 
+    str2num-int($int-part) + [+] $frac-part.comb.kv.map(-> $i, $d { $d.Int / (10 ** ($i + 1)) }); 
 }
 
 our sub str2num-parts($negate, $int-part, $frac-part, $exp-part) is export {
@@ -73,7 +77,7 @@ our sub str2num-parts($negate, $int-part, $frac-part, $exp-part) is export {
         # say $result.WHAT;
     } else {
         # Int
-        $result = $int-part.Int;
+        $result = str2num-int($int-part);
     }
     $result = -$result if $negate;
     $result;
