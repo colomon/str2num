@@ -10,7 +10,7 @@ our sub str2num-parse($s) is export {
     
     my $int-part = "";
     while $char.defined {
-        if $char ~~ '0'..'9' {
+        if $char ~~ '0'..'9' || $char eq '_' {
             $int-part ~= $char;
         } else {
             last;
@@ -21,7 +21,7 @@ our sub str2num-parse($s) is export {
     my $frac-part = "";
     if ($char eq '.') {
         while ($char = $digit-list.shift).defined {
-            if $char ~~ '0'..'9' {
+            if $char ~~ '0'..'9' || $char eq '_' {
                 $frac-part ~= $char;
             } else {
                 last;
@@ -41,7 +41,7 @@ our sub str2num-parse($s) is export {
         }
 
         while $char.defined {
-            if $char ~~ '0'..'9' {
+            if $char ~~ '0'..'9' || $char eq '_' {
                 $exp-part ~= $char;
             } else {
                 last;
@@ -54,12 +54,12 @@ our sub str2num-parse($s) is export {
 }
 
 our sub str2num-int($int-part) {
-    [+] $int-part.comb.reverse.kv.map(-> $i, $d { $d.Int * (10 ** $i) });
+    [+] $int-part.comb(/\d/).reverse.kv.map(-> $i, $d { $d.Int * (10 ** $i) });
 }
 
 our sub str2num-rat($int-part, $frac-part is copy) {
     $frac-part.=subst(/(\d)0+$/, { ~$_[0] });
-    str2num-int($int-part) + [+] $frac-part.comb.kv.map(-> $i, $d { $d.Int / (10 ** ($i + 1)) }); 
+    str2num-int($int-part) + [+] $frac-part.comb(/\d/).kv.map(-> $i, $d { $d.Int / (10 ** ($i + 1)) }); 
 }
 
 our sub str2num-parts($negate, $int-part, $frac-part, $exp-part) is export {
@@ -74,7 +74,6 @@ our sub str2num-parts($negate, $int-part, $frac-part, $exp-part) is export {
     } elsif $frac-part.chars > 0 {
         # Rat
         $result = str2num-rat($int-part, $frac-part);
-        # say $result.WHAT;
     } else {
         # Int
         $result = str2num-int($int-part);
