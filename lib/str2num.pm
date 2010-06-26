@@ -86,15 +86,37 @@ our sub str2num-int($src) {
     });
 }
 
+our sub str2num-base($src) {
+    upgrade_to_num_if_needed(Q:PIR {
+        .local pmc src
+        .local string src_s
+        src = find_lex '$src'
+        src_s = src
+        .local int pos, eos
+        .local num result
+        pos = 0
+        eos = length src_s
+        result = 1
+      str_loop:
+        unless pos < eos goto str_done
+        .local string char
+        char = substr src_s, pos, 1
+        if char == '_' goto str_next
+        result *= 10
+      str_next:
+        inc pos
+        goto str_loop
+      err_base:
+	src.'panic'('Invalid radix conversion of "', char, '"')
+      str_done:
+        %r = box result
+    });
+}
+
+
 our sub str2num-rat($int-part, $frac-part is copy) {
     $frac-part.=subst(/(\d)0+$/, { ~$_[0] });
-    my $result = str2num-int($int-part);
-    my $power = 10;
-    for $frac-part.comb(/\d/) -> $d {
-        $result += $d.Int / $power;
-        $power *= 10;
-    }
-    $result;
+    str2num-int($int-part) + str2num-int($frac-part) / str2num-base($frac-part);
 }
 
 our sub str2num-parts($negate, $int-part, $frac-part, $exp-part) is export {
