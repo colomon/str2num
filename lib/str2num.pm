@@ -53,13 +53,48 @@ our sub str2num-parse($s) is export {
     $negate, $int-part, $frac-part, $exp-part;
 }
 
-our sub str2num-int($int-part) {
-    [+] $int-part.comb(/\d/).reverse.kv.map(-> $i, $d { $d.Int * (10 ** $i) });
+our sub str2num-int($src) {
+    upgrade_to_num_if_needed(Q:PIR {
+        .local pmc src
+        .local string src_s
+        src = find_lex '$src'
+        src_s = src
+        .local int pos, eos
+        .local num result
+        pos = 0
+        eos = length src_s
+        result = 0
+      str_loop:
+        unless pos < eos goto str_done
+        .local string char
+        char = substr src_s, pos, 1
+        if char == '_' goto str_next
+        .local int digitval
+        digitval = index "00112233445566778899", char
+        if digitval < 0 goto err_base
+        digitval >>= 1
+        if digitval >= 10 goto err_base
+        result *= 10
+        result += digitval
+      str_next:
+        inc pos
+        goto str_loop
+      err_base:
+	src.'panic'('Invalid radix conversion of "', char, '"')
+      str_done:
+        %r = box result
+    });
 }
 
 our sub str2num-rat($int-part, $frac-part is copy) {
     $frac-part.=subst(/(\d)0+$/, { ~$_[0] });
-    str2num-int($int-part) + [+] $frac-part.comb(/\d/).kv.map(-> $i, $d { $d.Int / (10 ** ($i + 1)) }); 
+    my $result = str2num-int($int-part);
+    my $power = 10;
+    for $frac-part.comb(/\d/) -> $d {
+        $result += $d.Int / $power;
+        $power *= 10;
+    }
+    $result;
 }
 
 our sub str2num-parts($negate, $int-part, $frac-part, $exp-part) is export {
